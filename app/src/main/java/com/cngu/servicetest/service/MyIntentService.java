@@ -13,14 +13,15 @@ import android.util.Log;
 public class MyIntentService extends IntentService {
     private static final String TAG = "MyIntentService";
 
-    private volatile Messenger mMessenger;
+    HandlerThread mHandlerThread;
+    private Messenger mMessenger;
 
     public MyIntentService() {
         super(TAG);
 
-        HandlerThread ht = new HandlerThread(TAG + " HandlerThread");
-        ht.start();
-        Looper looper = ht.getLooper();
+        mHandlerThread = new HandlerThread(TAG + " HandlerThread");
+        mHandlerThread.start();
+        Looper looper = mHandlerThread.getLooper();
 
         /*
          * If no looper is specified, the current thread's looper is used. In this case,
@@ -52,6 +53,12 @@ public class MyIntentService extends IntentService {
     @Override
     public IBinder onBind(Intent intent) {
         return mMessenger.getBinder();
+    }
+
+    @Override
+    public void onDestroy() {
+        mHandlerThread.quit();
+        super.onDestroy();
     }
 
     private static class MyHandler extends Handler {
