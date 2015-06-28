@@ -7,7 +7,6 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -26,15 +25,17 @@ public class MainActivity extends AppCompatActivity {
 
     private Messenger mIntentServiceMessenger;
 
+    private boolean mBoundToIntentService = false;
     private ServiceConnection mIntentServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
             mIntentServiceMessenger = new Messenger(iBinder);
+            mBoundToIntentService = true;
         }
 
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
-
+            mBoundToIntentService = false;
         }
     };
 
@@ -77,7 +78,10 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onStop() {
-        unbindService(mIntentServiceConnection);
+        if (mBoundToIntentService) {
+            unbindService(mIntentServiceConnection);
+            mBoundToIntentService = false;
+        }
 
         super.onStop();
     }
